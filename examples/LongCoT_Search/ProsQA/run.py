@@ -1,5 +1,6 @@
 import os
 import argparse
+from dotenv import load_dotenv
 from utils import prosqa_extractor 
 from reasoners.lm.deepseek_model import DeepseekModel
 from reasoners.benchmark.prosqa import ProsQAEvaluator
@@ -31,16 +32,21 @@ def parse_args():
 
 
 def main():
+    load_dotenv()
     args = parse_args()
 
-    model = DeepseekModel(model = args.model_path, backend=args.backend, 
-            max_tokens=args.max_tokens, temperature = args.temperature)
+    # Construct path relative to this script
+    script_dir = os.path.dirname(__file__)
+    data_file_path = os.path.join(script_dir, 'data/prosqa_test.json')
+
+    model = DeepseekModel(model = args.model_path, backend=args.backend)
 
     evaluator = ProsQAEvaluator(
         output_extractor=prosqa_extractor, 
-        answer_extractor=lambda x: x["answer"]
+        answer_extractor=lambda x: x["answer"],
+        data_path=data_file_path # Pass the constructed path
         )
-    reasoner = ProsQAReasoner(model,args.temperature)
+    reasoner = ProsQAReasoner(model)
 
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=0)
     print(f'accuracy: {accuracy:.4f}')

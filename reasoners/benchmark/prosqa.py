@@ -1,4 +1,3 @@
-import datasets
 import json
 from tqdm import tqdm
 import torch
@@ -8,6 +7,8 @@ import sys
 import random
 import copy
 from reasoners import Evaluator
+
+DATA_PATH = os.path.join(os.path.dirname(__file__), 'data/prosqa_test.json')
 
 def load_ProsQA(json_file):
     with open(json_file, 'r') as f:
@@ -31,6 +32,7 @@ class ProsQAEvaluator(Evaluator):
     def __init__(self,
                  output_extractor,
                  answer_extractor,
+                 data_path,
                  init_prompt=None,
                  disable_log=False,
                  disable_tqdm=False,
@@ -40,7 +42,7 @@ class ProsQAEvaluator(Evaluator):
         self.output_extractor = output_extractor
         self.answer_extractor = answer_extractor #lambda x: x["answer"]
         self.input_processor = lambda x: x["question"] + "\n\nPlease output your conclusion like 'Answer: XXX is a YYY.'"
-        self.full_dataset = load_ProsQA('data/prosqa_test.json')
+        self.full_dataset = load_ProsQA(data_path)
         self._dataset_name = 'prosQA'
         self.disable_log = disable_log
         self.disable_tqdm = disable_tqdm
